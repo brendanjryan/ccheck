@@ -96,7 +96,6 @@ If you would like to see `ccheck` in action - this project bundles this example 
 ./ccheck -p example/policies example/test.yaml 
 Warning: /Users/brendanjryan/projects/ccheck/example/test.yaml - nginx-deployment should not be configured to live in the default namespace
 Failure: /Users/brendanjryan/projects/ccheck/example/test.yaml - nginx-deployment must not include any Horizontal Pod AutoScalers
-brendanjryan@Brendans-MacBook-Pro:~/projects/ccheck|
 ```
 
 ## FAQ
