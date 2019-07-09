@@ -139,12 +139,16 @@ func (c *ConfChecker) processFile(ctx context.Context, namespace string, fileNam
 
 		for _, fq := range fQueries {
 			fs := runQuery(ctx, fmt.Sprintf("data.%s.%s", namespace, fq), input, compiler)
-			fails = append(fails, fs)
+			if fs != nil {
+				fails = append(fails, fs)
+			}
 		}
 
 		for _, wq := range wQueries {
 			ws := runQuery(ctx, fmt.Sprintf("data.%s.%s", namespace, wq), input, compiler)
-			warns = append(warns, ws)
+			if ws != nil {
+				warns = append(warns, ws)
+			}
 		}
 	}
 
@@ -152,13 +156,6 @@ func (c *ConfChecker) processFile(ctx context.Context, namespace string, fileNam
 }
 
 func runQuery(ctx context.Context, query string, input interface{}, compiler *ast.Compiler) error {
-	hasResults := func(expression interface{}) bool {
-		if v, ok := expression.([]interface{}); ok {
-			return len(v) > 0
-		}
-		return false
-	}
-
 	rq, err := Query(query).Build(compiler, input)
 	if err != nil {
 		return errors.New("error constructing query : " + err.Error())
@@ -177,11 +174,13 @@ func runQuery(ctx context.Context, query string, input interface{}, compiler *as
 	// extract errors from "values" of evaluation
 	for _, r := range rr {
 		for _, e := range r.Expressions {
-			value := e.Value
-			if hasResults(value) {
-				for _, v := range value.([]interface{}) {
-					err = multierr.Append(err, errors.New(v.(string)))
-				}
+			vs, ok := e.Value.([]interface{})
+			if !ok {
+				continue
+			}
+
+			for _, v := range vs {
+				err = multierr.Append(err, errors.New(v.(string)))
 			}
 		}
 	}
