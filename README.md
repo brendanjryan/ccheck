@@ -5,7 +5,7 @@
 
 ## Usage
 
-The `ccheck` binary uses two special `rego` declarations, `deny` and `warn` during its evaluation process. If a resource matches a `deny` rule, a failure will be issued, otherwise a `warning` will be logged to the command line. An example of a valid, well-formed `ccheck` config is as follows:
+The `ccheck` binary uses two special `rego` rule types, `deny_<rule_name>` and `warn_<rule_name>` during its evaluation process. If a resource matches a `deny` rule, a failure will be issued, otherwise a `warning` will be logged to the command line. An example of a valid, well-formed `ccheck` config is as follows:
 
 **Example `*.rego file`**
 
@@ -17,13 +17,13 @@ is_hpa {
 }
 
 # checks that we do not include any horizontal pod autoscalers
-deny[msg] {
+deny_no_hpa[msg] {
     not is_hpa
     msg = sprintf("%s must not include any Horizontal Pod AutoScalers", [input.metadata.name])
 }
 
 # checks that apps do not live in the default namespace
-warn[msg] {
+warn_no_default[msg] {
     not input.metadata.namespace = "default"
     msg = sprintf("%s should not be configured to live in the default namespace", [input.metadata.name])
 ```
