@@ -1,13 +1,13 @@
 # `ccheck`
 ---
 
-`ccheck` is a command line application for writing tests against configuration files and data using the [`rego` query language](https://www.openpolicyagent.org/docs/latest). It was primarily written for checking Kubernetes config files, but is generic enough to be used for any structured data type (`json`, `toml` etc..)
+`ccheck` is a command line application for writing tests against configuration files and data using the [`rego` query language](https://www.openpolicyagent.org/docs/latest). It was primarily written for checking Kubernetes config files, but is generic enough to be used for any "structured" data format.
 
 ## Usage
 
-The `ccheck` binary uses two special `rego` rule types, `deny_<rule_name>` and `warn_<rule_name>` during its evaluation process. If a resource matches a `deny` rule, a failure will be issued, otherwise a `warning` will be logged to the command line. An example of a valid, well-formed `ccheck` config is as follows:
+The `ccheck` binary checks for `rego` rules of the form `deny_<rule_name>` and `warn_<rule_name>` during its evaluation process. If a resource matches a `"deny"` rule, a failure will be issued, otherwise a `"warning"` will be logged to the command line. An example of a valid, well-formed `ccheck` config is as follows:
 
-**Example `*.rego file`**
+**Example `.rego file`**
 
 ```rego
 package main
@@ -23,7 +23,7 @@ deny_no_hpa[msg] {
 }
 
 # checks that apps do not live in the default namespace
-warn_no_default[msg] {
+warn_no_default_namespace[msg] {
     not input.metadata.namespace = "default"
     msg = sprintf("%s should not be configured to live in the default namespace", [input.metadata.name])
 ```
