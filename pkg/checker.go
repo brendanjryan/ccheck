@@ -8,12 +8,18 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/brendanjryan/ccheck/pkg/parsers"
 	"github.com/open-policy-agent/opa/ast"
 	"github.com/open-policy-agent/opa/rego"
 	"github.com/uber-go/multierr"
+)
+
+var (
+	failQ = regexp.MustCompile("deny_?[a-zA-Z]*")
+	warnQ = regexp.MustCompile("warn_?[a-zA-Z]*")
 )
 
 // ConfChecker runs checks over a given set of policies and configs.
@@ -106,10 +112,24 @@ func (c *ConfChecker) processFile(ctx context.Context, namespace string, fileNam
 		return nil, nil, err
 	}
 
-	var fails []error
-	var warns []error
+	var fQueries []string
+	var wQueries []string
+	for _, m := range compiler.Modules {
+		for _, r := range m.Rules {
+			n := r.Head.Name.String()
+			if warnQ.MatchString(n) {
+				wQueries = append(wQueries, n)
+			}
+			if failQ.MatchString(n) {
+				fQueries = append(fQueries, n)
+			}
+
+		}
+	}
 
 	// run checker over each "configuration part" of each file
+	var fails []error
+	var warns []error
 	for _, part := range parts {
 		var input interface{}
 		err = p([]byte(part), &input)
@@ -117,11 +137,15 @@ func (c *ConfChecker) processFile(ctx context.Context, namespace string, fileNam
 			return nil, nil, err
 		}
 
-		fs := runQuery(ctx, fmt.Sprintf("data.%s.deny", namespace), input, compiler)
-		ws := runQuery(ctx, fmt.Sprintf("data.%s.warn", namespace), input, compiler)
+		for _, fq := range fQueries {
+			fs := runQuery(ctx, fmt.Sprintf("data.%s.%s", namespace, fq), input, compiler)
+			fails = append(fails, fs)
+		}
 
-		fails = append(fails, fs)
-		warns = append(warns, ws)
+		for _, wq := range wQueries {
+			ws := runQuery(ctx, fmt.Sprintf("data.%s.%s", namespace, wq), input, compiler)
+			warns = append(warns, ws)
+		}
 	}
 
 	return fails, warns, nil
