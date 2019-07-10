@@ -28,6 +28,8 @@ warn_no_default_namespace[msg] {
     msg = sprintf("%s should not be configured to live in the default namespace", [input.metadata.name])
 ```
 
+**N.B.** As an added bonus you can also use `ccheck` rules as policies in the [Open Policy Agent Admission Controller](https://www.openpolicyagent.org/docs/latest/kubernetes-admission-control/#4-define-a-policy-and-load-it-into-opa-via-kubernetes) 
+
 `ccheck` can then be invoked using this policy via: 
 
 ```bash 
