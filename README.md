@@ -1,7 +1,7 @@
 # `ccheck`
 ---
 
-`ccheck` is a command line application for writing tests against configuration files and data using the [`rego` query language](https://www.openpolicyagent.org/docs/latest). It was primarily written for checking Kubernetes config files, but is generic enough to be used for any "structured" data format.
+`ccheck` is a command line application for writing tests against configuration files and data using the [`rego` query language](https://www.openpolicyagent.org/docs/latest). It's intended purpose is for checking kubernetes config files (`.json` or `.yaml`) but can be extended to support other file types.
 
 ## Usage
 
